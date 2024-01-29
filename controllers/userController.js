@@ -1,21 +1,27 @@
 const User = require('../models/User');
 
-const CryptoJS = require('crypto-js')
-
-
 module.exports = {
-    createUser:async(req,res)=>{
-        const newUser = new User({
-            username: req.body.username,
-            email: req.body.email,
-            location: req.body.location,
-            password: CryptoJS.AES.encrypt(req.body.password, process.env.SECRET).toString()
-        })
-     try {
-        await newUser.save();
-        res.status(201).json({message:'User successfuly created'});
-     } catch (error) {
-        res.status(500).json({message: error})
-     }
+    deleteUser: async(req,res)=>{
+        try {
+            await User.findByIdAndDelete(req.params.id);
+
+            res.status(200).json('Successfully Deleted');
+        } catch (error) {
+            res.status(500).json(error)
+        }
+    },
+    getUser: async (req, res) =>{
+        try{
+            const user = await User.findById(req.params.id);
+            if(!user){
+                return res.status(401).json('User does not exist');
+            }
+            const {password, __v, createdAt, updatedAt, ...userData} = user._doc;
+
+            res.status(200).json(userData);
+        }
+        catch(error){
+            res.status(500).json(error);
+        }
     }
 }
